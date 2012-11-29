@@ -17,19 +17,28 @@ class pdfToThumb
         
         return "book.png"
 
-    done: (callback) ->
-        fs.removeSync "#{@destDir}/book-#{@page}.png"
+    done: (srcName, callback) ->
+        fs.removeSync "#{@destDir}/#{srcName}"
         callback()
 
     parse: (callback) ->
-        options =
-            srcPath: "#{@destDir}/book-#{@page}.png"
-            dstPath: "#{@destDir}/book.png"
-            width: 147
-            height: 205
-
-        im.resize options, (err, stdout, stderr) =>
+        fs.readdir @destDir, (err, files) =>
             if err then throw err
-            @done callback
+
+            srcName = "book-#{@page}.png"
+            for file in files
+                filenameArr = file.split('.')
+                if filenameArr[filenameArr.length - 1] is "png" and filenameArr[0].substr(0, 5) is "book-"
+                    srcName = file
+
+            options =
+                srcPath: "#{@destDir}/#{srcName}"
+                dstPath: "#{@destDir}/book.png"
+                width: 147
+                height: 205
+
+            im.resize options, (err, stdout, stderr) =>
+                if err then throw err
+                @done srcName, callback
 
 exports.pdfToThumb = pdfToThumb

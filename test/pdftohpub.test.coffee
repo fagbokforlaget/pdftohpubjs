@@ -26,9 +26,10 @@ describe 'pdftohpub', ->
         converter.generateThumb 2, ->
         
             assert.equal fs.existsSync('test/book/book.png'), true
+            if fs.existsSync 'test/book/book.png'
+                fs.removeSync 'test/book'
+
             done()
-            # if fs.existsSync 'test/book/book.png'
-            #     fs.removeSync 'test/book'
 
     it 'should generate pages', (done) ->
         converter = new pdftohpub("test/sample.pdf", 'test/book')
