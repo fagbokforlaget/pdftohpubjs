@@ -3,6 +3,13 @@ fs = require 'fs-extra'
 im = require 'imagemagick'
 
 class pdfToThumb
+    # generating thumbnails from pdf file
+    # new pdfToThumb(srcFile, destDir, page).execute(callback)
+    # srcFile - path to pdf file
+    # destDir - path to directory where generated thumbnail will be stored
+    # page - page which is going to be used for generating thumb
+    # callback - callback function
+
     constructor: (@file, @destDir, @page) ->
         @thumb = undefined
 
@@ -14,8 +21,6 @@ class pdfToThumb
             when 3 then return throw new Error "Error related to PDF permissions"
             when 4 then return throw new Error "Error related to ICC profile"
             when 99 then return throw new Error "Other error"
-        
-        return "book.png"
 
     done: (srcName, callback) ->
         fs.removeSync "#{@destDir}/#{srcName}"

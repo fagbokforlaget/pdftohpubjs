@@ -11,6 +11,7 @@ pdfInfo = require('./pdfinfo').pdfInfo
 
 
 class pdftohpub
+    # pdf to hpub converter
     constructor: (@pdf, @destDir) ->
         @pages = undefined
         fs.mkdirsSync(@destDir)

@@ -2,6 +2,8 @@ require 'shelljs/global'
 S = require('string')
 
 class PdfInfo
+    # fetching information about pdf file (e.g. number of pages)
+    # info = new PdfInfo(/path/to/pdf/file.pdf).execute()
     constructor: (@file) ->
         @info = {}
         @        
