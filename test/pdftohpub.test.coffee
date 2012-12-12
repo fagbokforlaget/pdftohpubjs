@@ -82,3 +82,20 @@ describe 'pdftohpub', ->
             assert.equal fs.existsSync('test/book/base.css'), true            
             fs.removeSync 'test/book'
             done()
+    
+    it 'should generate new book format', (done) ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
+        options = [
+            '--space-as-offset 1', 
+            '--zoom 2.33', 
+            '--font-format woff', 
+            '--font-suffix .woff',
+            '--split-pages 1',
+            '--css-filename book.css'
+        ]
+        converter.addImportOptions(options)
+        converter.buildBookWithSeparatedPages () ->
+            assert.equal converter.hpub.filelist.length, 6
+            fs.removeSync 'test/book'
+            done()
+

@@ -124,6 +124,7 @@ class pdftohpub
 
         @generatePage startFrom, next
 
+
     buildBook: (thumbPage, callback) ->
         # generates cover and pages
         if typeof thumbPage is "function"
@@ -132,6 +133,42 @@ class pdftohpub
 
         @generateThumb thumbPage, =>
             @generatePages 1, callback
+
+
+    listContent: (callback) ->
+        fs.readdir @destDir, (err, list) =>
+            for file in list
+                @hpub.filelist.push file
+                        
+            callback(err)
+
+    generateBook: (callback) ->
+        self = @
+        transcoder = @_initializeTranscoder()
+        transcoder.add_options(["book"])
+
+        transcoder.success ->
+            callback.call(self)
+
+        transcoder.error (error) ->
+            console.log "error", error
+
+        transcoder.progress (ret) ->
+            console.log "progress", ret
+
+        transcoder.convert()
+        @
+
+    buildBookWithSeparatedPages: (thumbPage, callback) ->
+        # generates cover and pages
+        if typeof thumbPage is "function"
+            callback = thumbPage
+            thumbPage = 1
+
+        @generateThumb thumbPage, =>
+            @generateBook  =>
+                @listContent =>
+                    callback()
 
     getInfo: ->
         # fetch basic info from PDF file
