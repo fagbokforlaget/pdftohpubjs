@@ -135,18 +135,41 @@ class pdftohpub
             @generatePages 1, callback
 
 
+    _walk: (dir, removeString, done) ->
+        # recursive search in directory
+        # http://stackoverflow.com/a/5827895
+        self = @
+        results = []
+        fs.readdir dir, (err, list) ->
+          return done(err)  if err
+          pending = list.length
+          return done(null, results)  unless pending
+          list.forEach (file) ->
+            file = dir + "/" + file
+            fs.stat file, (err, stat) ->
+              if stat and stat.isDirectory()
+                self._walk file, removeString, (err, res) ->
+                  results = results.concat(res)
+                  done null, results  unless --pending
+              else
+                results.push file.replace(removeString, '')
+                done null, results  unless --pending
+
     listContent: (callback) ->
-        fs.readdir @destDir, (err, list) =>
-            for file in list
-                @hpub.filelist.push file
-                        
-            callback(err)
+        @_walk @destDir, "#{@destDir}/", (err, result) =>
+            error = err
+            @hpub.filelist = _.sortBy result, (name) ->
+                regex = /page([0-9]+)/
+                regexResult = regex.exec(name)
+                if regexResult then return Number(regexResult[1])
+                else return name
+            callback()
 
     generateBook: (callback) ->
         self = @
         transcoder = @_initializeTranscoder()
-        transcoder.add_options(["book"])
-
+        transcoder.add_options(["page"])
+        console.log "options", transcoder
         transcoder.success ->
             callback.call(self)
 
