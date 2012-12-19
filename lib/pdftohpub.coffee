@@ -60,8 +60,8 @@ class pdftohpub
             callback = page
             page = 1
 
-        new pdfToThumb(@pdf, @destDir, page).execute ->
-            callback()
+        new pdfToThumb(@pdf, @destDir, page).execute (err) ->
+            callback(err)
 
     generatePage: (num, callback) ->
         # generate one page
@@ -169,7 +169,6 @@ class pdftohpub
         self = @
         transcoder = @_initializeTranscoder()
         transcoder.add_options(["page"])
-        console.log "options", transcoder
         transcoder.success ->
             callback.call(self)
 
@@ -188,10 +187,11 @@ class pdftohpub
             callback = thumbPage
             thumbPage = 1
 
-        @generateThumb thumbPage, =>
+        @generateThumb thumbPage, (err) =>
+            if err then return callback(err)
             @generateBook  =>
                 @listContent =>
-                    callback()
+                    callback(null)
 
     getInfo: ->
         # fetch basic info from PDF file

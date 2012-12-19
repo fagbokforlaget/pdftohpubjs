@@ -12,9 +12,9 @@ class PdfInfo
         child = exec "pdfinfo #{@file}", {async: false, silent: true}
         switch child.code
             when 0 then @parse child.output
-            when 1 then return throw new Error "Error opening a PDF file"
-            when 3 then return throw new Error "Error related to PDF permissions"
-            when 99 then return throw new Error "Other error"
+            when 1 then return Error "Error opening a PDF file"
+            when 3 then return Error "Error related to PDF permissions"
+            when 99 then return Error "Other error"
         @
 
     parse: (text) ->

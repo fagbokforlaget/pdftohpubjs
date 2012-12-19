@@ -17,14 +17,14 @@ class pdfToThumb
         child = exec "pdftocairo -png -f #{@page} -l #{@page} #{@file} #{@destDir}/book", {async: false}
         switch child.code
             when 0 then @parse(callback)
-            when 1 then return throw new Error "Error opening a PDF file"
-            when 3 then return throw new Error "Error related to PDF permissions"
-            when 4 then return throw new Error "Error related to ICC profile"
-            when 99 then return throw new Error "Other error"
+            when 1 then return callback(Error "Error opening a PDF file")
+            when 3 then return callback(Error "Error related to PDF permissions")
+            when 4 then return callback(Error "Error related to ICC profile")
+            when 99 then return callback(Error "Other error")
 
     done: (srcName, callback) ->
         fs.removeSync "#{@destDir}/#{srcName}"
-        callback()
+        callback(null)
 
     parse: (callback) ->
         fs.readdir @destDir, (err, files) =>
