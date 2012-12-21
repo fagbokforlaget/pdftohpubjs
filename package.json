@@ -14,7 +14,7 @@
     , "shelljs": "*"
     , "imagemagick": "*"
     , "string": "*"
-    , "pdftohmljs": "*"
+    , "pdftohtmljs": "*"
     , "hpubjs": "*"
   },
   "repository": "",
