@@ -63,6 +63,19 @@ class pdftohpub
         new pdfToThumb(@pdf, @destDir, page).execute (err) ->
             callback(err)
 
+    generateThumbs: (callback) ->
+        console.log "generating thumbs"
+        @getInfo() unless @pages
+        mySeries = [1..@pages]
+        
+        console.log "mySeries", mySeries, @pages
+        async.forEachSeries mySeries, (page, next) =>
+            console.log "page:", page
+            new pdfToThumb(@pdf, @destDir, page).execute (err) ->
+                next()
+        , (err) ->
+            callback(err)
+
     generatePage: (num, callback) ->
         # generate one page
         self = @
@@ -187,7 +200,7 @@ class pdftohpub
             callback = thumbPage
             thumbPage = 1
 
-        @generateThumb thumbPage, (err) =>
+        @generateThumbs (err) =>
             if err then return callback(err)
             @generateBook  =>
                 @listContent =>

@@ -12,9 +12,12 @@ class pdfToThumb
 
     constructor: (@file, @destDir, @page) ->
         @thumb = undefined
+        console.log @destDir
+        fs.mkdirsSync("#{@destDir}/__thumbs__")
+        fs.mkdirsSync("#{@destDir}/tmp")
 
     execute: (callback) ->
-        child = exec "pdftocairo -png -f #{@page} -l #{@page} #{@file} #{@destDir}/book", {async: false}
+        child = exec "pdftocairo -png -f #{@page} -l #{@page} #{@file} #{@destDir}/tmp/book", {async: false}
         switch child.code
             when 0 then @parse(callback)
             when 1 then return callback(Error "Error opening a PDF file")
@@ -23,11 +26,11 @@ class pdfToThumb
             when 99 then return callback(Error "Other error")
 
     done: (srcName, callback) ->
-        fs.removeSync "#{@destDir}/#{srcName}"
+        fs.removeSync "#{@destDir}/tmp/#{srcName}"
         callback(null)
 
     parse: (callback) ->
-        fs.readdir @destDir, (err, files) =>
+        fs.readdir "#{@destDir}/tmp", (err, files) =>
             if err then throw err
 
             srcName = "book-#{@page}.png"
@@ -37,13 +40,15 @@ class pdfToThumb
                     srcName = file
 
             options =
-                srcPath: "#{@destDir}/#{srcName}"
-                dstPath: "#{@destDir}/book.png"
+                srcPath: "#{@destDir}/tmp/#{srcName}"
+                dstPath: "#{@destDir}/__thumbs__/page#{@page}.png"
                 width: 147
                 height: 205
 
             im.resize options, (err, stdout, stderr) =>
+                console.log "resized"
                 if err then throw err
+                fs.copy "#{@destDir}/__thumbs__/page#{@page}.png", "#{@destDir}/book.png" if @page is 1
                 @done srcName, callback
 
 exports.pdfToThumb = pdfToThumb
