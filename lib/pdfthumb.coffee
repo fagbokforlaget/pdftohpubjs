@@ -12,7 +12,6 @@ class pdfToThumb
 
     constructor: (@file, @destDir, @page) ->
         @thumb = undefined
-        console.log @destDir
         fs.mkdirsSync("#{@destDir}/__thumbs__")
         fs.mkdirsSync("#{@destDir}/tmp")
 
@@ -46,7 +45,6 @@ class pdfToThumb
                 height: 205
 
             im.resize options, (err, stdout, stderr) =>
-                console.log "resized"
                 if err then throw err
                 fs.copy "#{@destDir}/__thumbs__/page#{@page}.png", "#{@destDir}/book.png" if @page is 1
                 @done srcName, callback
