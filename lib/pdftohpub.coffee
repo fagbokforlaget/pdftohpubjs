@@ -64,13 +64,10 @@ class pdftohpub
             callback(err)
 
     generateThumbs: (callback) ->
-        console.log "generating thumbs"
         @getInfo() unless @pages
         mySeries = [1..@pages]
         
-        console.log "mySeries", mySeries, @pages
         async.forEachSeries mySeries, (page, next) =>
-            console.log "page:", page
             new pdfToThumb(@pdf, @destDir, page).execute (err) ->
                 next()
         , (err) ->
