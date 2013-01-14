@@ -16,14 +16,6 @@ class pdfToThumb
         fs.mkdirsSync("#{@destDir}/tmp")
 
     execute: (callback) ->
-        # child = exec "pdftocairo -png -f #{@page} -l #{@page} #{@file} #{@destDir}/tmp/book", {async: false}
-        # switch child.code
-        #     when 0 then @parse(callback)
-        #     when 1 then return callback(Error "Error opening a PDF file")
-        #     when 3 then return callback(Error "Error related to PDF permissions")
-        #     when 4 then return callback(Error "Error related to ICC profile")
-        #     when 99 then return callback(Error "Other error")
-
         exec "pdftocairo -png -f #{@page} -l #{@page} #{@file} #{@destDir}/tmp/book", (code, output) =>
             switch code
                 when 0 then return @parse(callback)
