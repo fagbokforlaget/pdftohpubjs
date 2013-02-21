@@ -1,23 +1,26 @@
 {
   "name": "pdftohpubjs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A pdf to hpub converter",
   "main": "index.js",
   "scripts": {
     "test": "make test"
   },
   "dependencies": {
-      "mocha": "*"
-    , "async": "*"
-    , "underscore": "*"
-    , "fs-extra": "*"
-    , "shelljs": "*"
-    , "imagemagick": "*"
-    , "string": "*"
-    , "pdftohtmljs": "*"
-    , "hpubjs": "*"
+    "mocha": "*",
+    "async": "*",
+    "underscore": "*",
+    "fs-extra": "*",
+    "shelljs": "*",
+    "imagemagick": "*",
+    "string": "*",
+    "pdftohtmljs": "*",
+    "hpubjs": "*"
   },
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
   "keywords": [
     "pdftohpub",
     "pdftohpubjs",
@@ -27,5 +30,9 @@
     "pdftohtmljs"
   ],
   "author": "Michal Ostrowski",
-  "license": "BSD"
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "devDependencies": {
+    "mocha": "~1.7.1"
+  }
 }

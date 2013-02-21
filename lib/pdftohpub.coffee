@@ -68,9 +68,11 @@ class pdftohpub
         mySeries = [1..@pages]
         
         async.forEachSeries mySeries, (page, next) =>
+            @updateProgress page*45/(mySeries.length + 1)
             new pdfToThumb(@pdf, @destDir, page).execute (err) ->
                 next()
-        , (err) ->
+        , (err) =>
+            @updateProgress 45
             callback(err)
 
     generatePage: (num, callback) ->
@@ -185,22 +187,27 @@ class pdftohpub
         transcoder.error (error) ->
             console.log "error", error
 
-        transcoder.progress (ret) ->
-            console.log "progress", ret
+        transcoder.progress (ret) =>
+            self.updateProgress 45 + ret.current * 45/(ret.total + 1)
 
         transcoder.convert()
         @
 
-    buildBookWithSeparatedPages: (thumbPage, callback) ->
+    buildBookWithSeparatedPages: (thumbPage, progressCB, callback) ->
+        @progress progressCB
         # generates cover and pages
         if typeof thumbPage is "function"
             callback = thumbPage
             thumbPage = 1
 
+        @updateProgress(1)
+
         @generateThumbs (err) =>
             if err then return callback(err)
             @generateBook  =>
+                @updateProgress 90
                 @listContent =>
+                    @updateProgress 100
                     callback(null)
 
     getInfo: ->
@@ -214,5 +221,12 @@ class pdftohpub
         @hpub.build (err) =>
             @hpub.pack @destDir, (size) ->
                 callback(size)
+
+    progress: (callback) ->
+        @progressCB = callback
+
+    updateProgress: (val) ->
+        if @progressCB and typeof @progressCB is "function"
+            @progressCB(val)
 
 exports.pdftohpub = pdftohpub
