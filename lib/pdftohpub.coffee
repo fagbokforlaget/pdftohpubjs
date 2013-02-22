@@ -1,131 +1,11 @@
-require 'shelljs/global'
-pdftohtml = require 'pdftohtmljs'
-async = require 'async'
 fs = require 'fs-extra'
 _ = require 'underscore'
-HPUB = require('hpubjs')
-pdfinfo = require('pdfinfojs')
+pdfinfo = require 'pdfinfojs'
 
-DateHelper = require('./date_helper').DateHelper
-pdfToThumb = require('./pdfthumb').pdfToThumb
-pdfInfo = require('./pdfinfo').pdfInfo
-
-class Transcoder
-  constructor: (@file, @options) ->
-    @transcoder = new pdftohtml(@file)
-    @transcoder.add_options(@importOptions())
-    # @transcoder.add_options(['--dest-dir '+ @hpubDir])
-    @transcoder.add_options(["page"])
-
-  importOptions: ->
-    _.map @options, (val, key) ->
-      "--#{key} #{val}"
-
-  get: ->
-    @transcoder
-
-class Cover
-  constructor: (@pdfFile, @hpubDir, @options) ->
-    unless @options.coverThumb then @options.coverThumb = 1
-
-  fetch: (callback) ->
-    if fs.existsSync "#{@hpubDir}/#{@options.thumbFolder}/page#{@options.coverThumb}.png"
-      fs.copy "#{@hpubDir}/#{@options.thumbFolder}/page#{@options.coverThumb}.png", "#{@hpubDir}/book.png", (err) ->
-        callback err
-    else
-      @_generateCover callback
-
-  _generateCover: (callback) ->
-    new pdfToThumb(@pdfFile, "#{@hpubDir}", @options.coverThumb).execute (err) =>
-      fs.copy "#{@hpubDir}/page#{@options.coverThumb}.png", "#{@hpubDir}/book.png", (err) =>
-        fs.removeSync "#{@hpubDir}/page#{@options.coverThumb}.png"
-        callback err
-
-class Thumbs
-  constructor: (@pdfFile, @hpubDir, @options, @progress) ->
-
-  exec: (callback) ->
-    if @options.buildThumbs
-      @options.pageEnd = @getInfo() unless @options.pageEnd
-      mySeries = [@options.pageStart..@options.pageEnd]
-
-      async.forEachSeries mySeries, (page, next) =>
-        @progress() if @progress
-        new pdfToThumb(@pdfFile, "#{@hpubDir}/#{@options.thumbFolder}", page).execute (err) =>
-          next()
-      , (err) =>
-        if @options.coverThumb
-          new Cover(@pdfFile, @hpubDir, @options).fetch (err) ->
-            callback err
-        else
-          callback err
-    else
-      new Cover(@pdfFile, @hpubDir, @options).fetch (err) ->
-        callback err
-
-  getInfo: ->
-    pinfo = new pdfinfo(@pdfFile)
-    ret = pinfo.getSync()
-    ret.pages
-
-class Lister
-  constructor: (@startDir) ->
-    @
-
-  list: (callback) ->
-    res = []
-    @_walk @startDir, (err, result) =>
-      list = _.sortBy result, (name) ->
-        reg = /page([0-9]+)/.exec(name)
-        if reg then return Number(reg[1]) else return name
-      callback(err, list)
-
-  _walk: (dir, done) ->
-    # recursive search in directory
-    # http://stackoverflow.com/a/5827895
-    self = @
-    results = []
-    fs.readdir dir, (err, list) ->
-      return done(err) if err
-
-      pending = list.length
-      return done(null, results) unless pending
-
-      list.forEach (file) ->
-        file = "#{dir}/#{file}"
-        fs.stat file, (err, stat) ->
-          if stat and stat.isDirectory()
-            self._walk file, (err, res) ->
-              results = results.concat res
-              done null, results unless --pending
-          else
-            results.push file.replace(self.startDir + "/", '')
-            done null, results unless --pending
-
-class Hpuber
-  constructor: (@dir) ->
-    meta =
-      hpub: 1 
-      author: []
-      title: ""
-      date: DateHelper.toString(new Date())
-      url: ''
-      contents: []
-
-    writer = HPUB.Writer
-    @hpub = new writer @dir
-    @hpub.addMeta meta
-
-  feed: (callback) ->
-    new Lister(@dir).list (err, list) =>
-      @hpub.filelist = list
-      callback null, @hpub
-
-  finalize: (callback) ->
-    # builds hpub and pack it into .hpub file
-    @hpub.build (err) =>
-      @hpub.pack @dir, (size) ->
-        callback(size)
+Transcoder = require './pdftohpub/transcoder'
+Cover = require './pdftohpub/cover'
+Thumbs = require './pdftohpub/thumbs'
+Hpuber = require './pdftohpub/hpuber'
 
 class PdfToHpub
   constructor: (@pdfFile, @hpubDir) ->
@@ -139,6 +19,7 @@ class PdfToHpub
       'font-suffix': '.woff'
       'dest-dir': @hpubDir
       'css-filename': 'book.css'
+      'decompose-ligature': '1'
 
     @options = {}
 
@@ -224,4 +105,4 @@ class PdfToHpub
     ret = pinfo.getSync()
     parseInt ret.pages, 10
 
-exports.pdftohpub = PdfToHpub
+module.exports = PdfToHpub

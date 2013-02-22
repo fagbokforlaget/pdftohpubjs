@@ -1,90 +1,101 @@
-# assert = require('assert')
-# fs = require 'fs-extra'
-# pdftohpub = require('../index.js')
+assert = require('assert')
+fs = require 'fs-extra'
+pdftohpub = require('../index.js')
+_ = require 'underscore'
 
-# describe 'pdftohpub', ->
-#   describe 'converter', ->
+describe 'pdftohpub', ->
+  describe 'converter', ->
 
-#     it 'should report info about pdf', ->
-#         converter = new pdftohpub("test/sample.pdf", 'test/book')
+    it 'should merge pdf options', ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
 
-#         converter.getInfo()
-#         assert.equal converter.pages, 4
+        converter.pdfOptions =
+            'single-page': '1'
 
-#     it 'should generate one page', (done) ->
-#         converter = new pdftohpub("test/sample.pdf", 'test/book')
+        assert.equal converter.mergePdfOptions()['single-page'], '1'
+        assert.equal converter.mergePdfOptions()['zoom'], '1.3333'
 
-#         converter.generatePage 1, (num) ->
-#             assert.equal num, 1
-#             assert.equal fs.existsSync('test/book/page-1.html'), true
-#             fs.removeSync 'test/book'
-#             done()
+    it 'should merge options', ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
 
-#     it 'should generate pages', (done) ->
-#         converter = new pdftohpub("test/sample.pdf", 'test/book')
+        converter.options =
+            buildThumbs: null
+            thumbSize:
+                width: 10
+                height: 20
 
-#         converter.generatePages 1, ->
-#             assert.equal fs.existsSync('test/book/page-1.html'), true
-#             assert.equal fs.existsSync('test/book/page-2.html'), true
-#             assert.equal fs.existsSync('test/book/page-3.html'), true
-#             assert.equal fs.existsSync('test/book/page-4.html'), true
+        assert.equal converter.mergeOptions().buildThumbs, null
+        assert.equal converter.mergeOptions().thumbSize.width, 10
 
-#             fs.removeSync 'test/book'
-#             done()
+    it 'should generate thumbs', (done) ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
 
-#     it 'should build book', (done) ->
-#         converter = new pdftohpub("test/sample.pdf", 'test/book')
+        converter.options =
+            buildThumbs: true
+            coverThumb: false
 
-#         converter.buildBook ->
-#             assert.equal fs.existsSync('test/book/page-1.html'), true
-#             assert.equal fs.existsSync('test/book/book.png'), true
+        converter.generateThumbs (err) ->
+            assert.equal fs.existsSync('test/book/__thumbs__/page1.png'), true
+            fs.removeSync 'test/book'
+            done()
 
-#             fs.removeSync 'test/book'
-#             done()
+    it "should generate thumbs from page A to page B", (done) ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
 
-#     it 'should build book.hpub', (done) ->
-#         converter = new pdftohpub("test/sample.pdf", 'test/book')
+        converter.options =
+            buildThumbs: true
+            coverThumb: false
+            pageStart: 2
+            pageEnd: 3
 
-#         converter.buildBook ->
-#             converter.finalize (err) ->
-#                 assert.equal fs.existsSync('test/book.hpub'), true
-#                 assert.equal fs.existsSync('test/book/book.json'), true
+        converter.generateThumbs (err) ->
+            assert.equal fs.existsSync('test/book/__thumbs__/page1.png'), false
+            assert.equal fs.existsSync('test/book/__thumbs__/page2.png'), true
+            assert.equal fs.existsSync('test/book/__thumbs__/page3.png'), true
+            fs.removeSync 'test/book'
+            done()        
 
-#                 fs.removeSync 'test/book'
-#                 fs.removeSync 'test/book.hpub'
-#                 done()
+    it 'should copy cover page', (done) ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
 
-#     it 'should generate one page with custom options', (done) ->
-#         converter = new pdftohpub("test/sample.pdf", 'test/book')
+        converter.options =
+            buildThumbs: true
 
-#         options = [
-#             '--space-as-offset 1', 
-#             '--zoom 2.33', 
-#             '--font-format woff', 
-#             '--font-suffix .woff',
-#             '--single-html 0'
-#         ]
-#         converter.addImportOptions(options)
+        converter.generateThumbs (err) ->
+            assert.equal fs.existsSync('test/book/__thumbs__/page1.png'), true
+            assert.equal fs.existsSync('test/book/book.png'), true
+            fs.removeSync 'test/book'
+            done()
 
-#         converter.generatePage 1, (num) ->
-#             assert.equal num, 1
-#             assert.equal fs.existsSync('test/book/base.css'), true            
-#             fs.removeSync 'test/book'
-#             done()
-    
-#     it 'should generate new book format', (done) ->
-#         converter = new pdftohpub("test/sample.pdf", 'test/book')
-#         options = [
-#             '--space-as-offset 1', 
-#             '--zoom 2.33', 
-#             '--font-format woff', 
-#             '--font-suffix .woff',
-#             '--split-pages 1',
-#             '--css-filename book.css'
-#         ]
-#         converter.addImportOptions(options)
-#         converter.buildBookWithSeparatedPages () ->
-#             assert.equal converter.hpub.filelist.length, 10
-#             fs.removeSync 'test/book'
-#             done()
+    it 'should create cover page', (done) ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
+
+        converter.options =
+            buildThumbs: false
+
+        converter.getCover (err) ->
+            assert.equal fs.existsSync('test/book/book.png'), true
+            fs.removeSync 'test/book'
+            done()
+
+    it 'should convert pdf', (done) ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
+
+        converter.options =
+            buildThumbs: true
+
+        converter.progress (progress) ->
+            assert.equal (progress <= 100 and progress >= 0), true
+
+        converter.convert (err, obj) ->
+            assert.equal fs.existsSync('test/book/book.png'), true
+            assert.equal fs.existsSync('test/book/book.css'), true
+            assert.equal fs.existsSync('test/book/page1.page'), true
+            assert.equal fs.existsSync('test/book/fonts/'), true
+            assert.equal fs.existsSync('test/book/images/'), true
+
+            assert.equal _.isArray(obj.hpub.filelist), true
+            assert obj.hpub.filelist.length > 0, true
+            fs.removeSync 'test/book'
+            done()
 

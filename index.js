@@ -1,5 +1,5 @@
 require("coffee-script");
 
-pdftohpub = require('./lib/pdftohpub').pdftohpub;
+PdfToHpub = require('./lib/pdftohpub');
 
-module.exports = pdftohpub;
+module.exports = PdfToHpub;

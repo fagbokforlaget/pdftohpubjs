@@ -1,22 +1,23 @@
 {
   "name": "pdftohpubjs",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "A pdf to hpub converter",
   "main": "index.js",
   "scripts": {
     "test": "make test"
   },
   "dependencies": {
-    "mocha": "*",
-    "async": "*",
-    "underscore": "*",
-    "fs-extra": "*",
-    "shelljs": "*",
-    "imagemagick": "*",
-    "string": "*",
-    "pdftohtmljs": "*",
+    "mocha": "1.7.1",
+    "async": "0.1.22",
+    "underscore": "1.4.4",
+    "fs-extra": "0.3.2",
+    "shelljs": "0.0.8",
+    "imagemagick": "0.1.3",
+    "string": "1.1.0",
+    "pdftohtmljs": "0.1.1",
     "hpubjs": "*",
-    "pdfinfojs": "*"
+    "pdfinfojs": "0.3.1",
+    "moment": "2.0.0"
   },
   "repository": {
     "type": "git",
