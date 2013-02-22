@@ -24,9 +24,11 @@ class PdfToHpub
     @options = {}
 
     @defaults =
+      buildHpub: false
+      cleanDir: false
       buildThumbs: true
       coverThumb: 1
-      thumbSize:
+      thumb:
         width: 147
         height: 205
       pageStart: 1
@@ -36,6 +38,7 @@ class PdfToHpub
     @progressCB = undefined
     @progressVal = 0
     @unit = 0
+    @metadata = {}
 
     fs.mkdirsSync(@hpubDir)
     @pagesCount = @getInfo()
@@ -79,10 +82,18 @@ class PdfToHpub
       if err then return callback err
       @convertPdf (err) =>
         if err then return callback err
-        new Hpuber(@hpubDir).feed (err, hpub) =>
-          @progressCB(100)
-          @hpub = hpub
-          callback null, @
+        new Hpuber(@hpubDir, @metadata).feed (err, hpub) =>
+          @hpub = hpub.hpub
+          if @options.buildHpub
+            hpub.build (err) =>
+              @progressCB(100)
+              callback err, @
+          else
+            @progressCB(100)
+            callback err, @
+
+  addMetadata: (metadata) ->
+    @metadata = _.extend @metadata, metadata
 
   mergeOptions: ->
     @options = _.extend @defaults, @options
