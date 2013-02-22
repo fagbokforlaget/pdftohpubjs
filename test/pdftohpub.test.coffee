@@ -99,3 +99,45 @@ describe 'pdftohpub', ->
             fs.removeSync 'test/book'
             done()
 
+    it 'should build hpub', (done) ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
+
+        converter.options =
+            buildThumbs: true
+            buildHpub: true
+
+        converter.progress (progress) ->
+            assert.equal (progress <= 100 and progress >= 0), true
+
+        converter.convert (err, obj) ->
+            assert.equal fs.existsSync('test/book/book.png'), true
+            assert.equal fs.existsSync('test/book/book.css'), true
+            assert.equal fs.existsSync('test/book/page1.page'), true
+            assert.equal fs.existsSync('test/book/fonts/'), true
+            assert.equal fs.existsSync('test/book/images/'), true
+            assert.equal fs.existsSync('test/book/book.json'), true
+
+            fs.removeSync 'test/book'
+            done()
+
+    it "should be able to add metadata to hpub", (done) ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
+
+        converter.options =
+            buildThumbs: true
+            buildHpub: true
+
+        converter.addMetadata
+            author: ["author"]
+            title: "Title"
+
+        converter.progress (progress) ->
+            assert.equal (progress <= 100 and progress >= 0), true
+
+        converter.convert (err, obj) ->
+            assert.equal fs.existsSync('test/book/book.json'), true
+            assert.equal obj.hpub.meta.author[0], "author"
+            assert.equal obj.hpub.meta.title, "Title"
+
+            fs.removeSync 'test/book'
+            done()
