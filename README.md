@@ -1,7 +1,5 @@
 ## pdftohpubjs - PDF to hpub converter
 
-
-
 ### Installation
 
 via npm:
@@ -23,28 +21,21 @@ sudo apt-get install imagemagick
 ### Usage
 
 ```
+
 var pdftohpub = require('pdftohpubjs');
+var converter = new pdftohpub("test/sample.pdf", 'test/book');
 
-var converter = new pdftohpub("test/sample1.pdf", 'test/book');
+converter.options = {
+  buildThumbs: true
+};
 
-var generateThumbFromPage = 2;
-
-// optionally, you can add options for exporting pdf to html5 files
-var options = [
-            '--space-as-offset 1', 
-            '--zoom 2.33', 
-            '--font-format woff', 
-            '--font-suffix .woff',
-            '--single-html 0'
-        ]
-converter.addImportOptions(options);
-
-converter.buildBook(generateThumbFromPage, function() {
-    converter.finalize(function(err){
-        // the book.hpub is build by now!
-    });
+converter.progress(function(progress) {
+  console.log("progress", progress)
 });
-   
+
+converter.convert(function(err, obj) {
+  console.log(obj);
+}); 
 
 ```
 
