@@ -4,229 +4,224 @@ async = require 'async'
 fs = require 'fs-extra'
 _ = require 'underscore'
 HPUB = require('hpubjs')
+pdfinfo = require('pdfinfojs')
 
 DateHelper = require('./date_helper').DateHelper
 pdfToThumb = require('./pdfthumb').pdfToThumb
 pdfInfo = require('./pdfinfo').pdfInfo
 
+class Transcoder
+  constructor: (@file, @options) ->
+    @transcoder = new pdftohtml(@file)
+    @transcoder.add_options(@importOptions())
+    # @transcoder.add_options(['--dest-dir '+ @hpubDir])
+    @transcoder.add_options(["page"])
 
-class pdftohpub
-    # pdf to hpub converter
-    constructor: (@pdf, @destDir) ->
-        @pages = undefined
-        fs.mkdirsSync(@destDir)
-        @hpub = @_setUpHpub()
+  importOptions: ->
+    _.map @options, (val, key) ->
+      "--#{key} #{val}"
 
-        @importOptions = []
+  get: ->
+    @transcoder
 
-        @filenamePrefix = 'page-'
-        @filenameSuffix = '.html'
-        
-        @
+class Cover
+  constructor: (@pdfFile, @hpubDir, @options) ->
+    unless @options.coverThumb then @options.coverThumb = 1
 
-    addImportOptions: (options) ->
-        # options (as Array) for importing from pdf
-        @importOptions = _.union @importOptions, options
-        @
+  fetch: (callback) ->
+    if fs.existsSync "#{@hpubDir}/#{@options.thumbFolder}/page#{@options.coverThumb}.png"
+      fs.copy "#{@hpubDir}/#{@options.thumbFolder}/page#{@options.coverThumb}.png", "#{@hpubDir}/book.png", (err) ->
+        callback err
+    else
+      @_generateCover callback
 
-    useDefaultImportOptions: ->
-        # default options for pdftohtmljs
-        @addImportOptions ['--space-as-offset 1', 
-                        '--zoom 1.33', 
-                        '--font-format woff', 
-                        '--font-suffix .woff'
-                    ]
-        @
+  _generateCover: (callback) ->
+    new pdfToThumb(@pdfFile, "#{@hpubDir}", @options.coverThumb).execute (err) =>
+      fs.copy "#{@hpubDir}/page#{@options.coverThumb}.png", "#{@hpubDir}/book.png", (err) =>
+        fs.removeSync "#{@hpubDir}/page#{@options.coverThumb}.png"
+        callback err
 
-    _setUpHpub: ->
-        # helper method for setting up an hpub writer
-        meta =
-            hpub: 1 
-            author: []
-            title: ""
-            date: DateHelper.toString(new Date())
-            url: ''
-            contents: []
+class Thumbs
+  constructor: (@pdfFile, @hpubDir, @options, @progress) ->
 
-        writer = HPUB.Writer
-        hpub = new writer @destDir
-        hpub.addMeta meta
-        return hpub
+  exec: (callback) ->
+    if @options.buildThumbs
+      @options.pageEnd = @getInfo() unless @options.pageEnd
+      mySeries = [@options.pageStart..@options.pageEnd]
+
+      async.forEachSeries mySeries, (page, next) =>
+        @progress() if @progress
+        new pdfToThumb(@pdfFile, "#{@hpubDir}/#{@options.thumbFolder}", page).execute (err) =>
+          next()
+      , (err) =>
+        if @options.coverThumb
+          new Cover(@pdfFile, @hpubDir, @options).fetch (err) ->
+            callback err
+        else
+          callback err
+    else
+      new Cover(@pdfFile, @hpubDir, @options).fetch (err) ->
+        callback err
+
+  getInfo: ->
+    pinfo = new pdfinfo(@pdfFile)
+    ret = pinfo.getSync()
+    ret.pages
+
+class Lister
+  constructor: (@startDir) ->
+    @
+
+  list: (callback) ->
+    res = []
+    @_walk @startDir, (err, result) =>
+      list = _.sortBy result, (name) ->
+        reg = /page([0-9]+)/.exec(name)
+        if reg then return Number(reg[1]) else return name
+      callback(err, list)
+
+  _walk: (dir, done) ->
+    # recursive search in directory
+    # http://stackoverflow.com/a/5827895
+    self = @
+    results = []
+    fs.readdir dir, (err, list) ->
+      return done(err) if err
+
+      pending = list.length
+      return done(null, results) unless pending
+
+      list.forEach (file) ->
+        file = "#{dir}/#{file}"
+        fs.stat file, (err, stat) ->
+          if stat and stat.isDirectory()
+            self._walk file, (err, res) ->
+              results = results.concat res
+              done null, results unless --pending
+          else
+            results.push file.replace(self.startDir + "/", '')
+            done null, results unless --pending
+
+class Hpuber
+  constructor: (@dir) ->
+    meta =
+      hpub: 1 
+      author: []
+      title: ""
+      date: DateHelper.toString(new Date())
+      url: ''
+      contents: []
+
+    writer = HPUB.Writer
+    @hpub = new writer @dir
+    @hpub.addMeta meta
+
+  feed: (callback) ->
+    new Lister(@dir).list (err, list) =>
+      @hpub.filelist = list
+      callback null, @hpub
+
+  finalize: (callback) ->
+    # builds hpub and pack it into .hpub file
+    @hpub.build (err) =>
+      @hpub.pack @dir, (size) ->
+        callback(size)
+
+class PdfToHpub
+  constructor: (@pdfFile, @hpubDir) ->
+    @pdfOptions = {}
     
-    generateThumb: (page, callback) ->
-        # generate cover image
-        # @hpub.meta.cover = new pdfToThumb(@pdf, @destDir).execute()
-        if typeof page is "function"
-            callback = page
-            page = 1
+    @pdfDefaults =
+      'single-html': '0'
+      'split-pages': '1'
+      'space-as-offset': '1'
+      'zoom': 1.3333
+      'font-suffix': '.woff'
+      'dest-dir': @hpubDir
+      'css-filename': 'book.css'
 
-        new pdfToThumb(@pdf, @destDir, page).execute (err) ->
-            callback(err)
+    @options = {}
 
-    generateThumbs: (callback) ->
-        @getInfo() unless @pages
-        mySeries = [1..@pages]
-        
-        async.forEachSeries mySeries, (page, next) =>
-            @updateProgress page*45/(mySeries.length + 1)
-            new pdfToThumb(@pdf, @destDir, page).execute (err) ->
-                next()
-        , (err) =>
-            @updateProgress 45
-            callback(err)
+    @defaults =
+      buildThumbs: true
+      coverThumb: 1
+      thumbSize:
+        width: 147
+        height: 205
+      pageStart: 1
+      pageEnd: undefined
+      thumbFolder: "__thumbs__"
 
-    generatePage: (num, callback) ->
-        # generate one page
-        self = @
-        transcoder = @_initializeTranscoder()
-        transcoder.add_options(['-f '+ num, '-l ' + num])
-        
-        pageName = @_buildPageName(num)
-        transcoder.add_options([pageName])
-        
-        transcoder.success ->
-            self.hpub.addPage pageName
-            callback.call(self, num)
+    @progressCB = undefined
+    @progressVal = 0
+    @unit = 0
 
-        transcoder.error (error) ->
-            console.log "error", error
+    fs.mkdirsSync(@hpubDir)
+    @pagesCount = @getInfo()
 
-        transcoder.progress (ret) ->
-            console.log "progress", ret
+  triggerProgress: ->
+    if @progress and typeof @progress is "function"
+      @progress @progressState
 
-        transcoder.convert()
-        @
+  generateThumbs: (callback) ->
+    @unit = @unit + @pagesCount if @options.buildThumbs
+    @mergeOptions()
+    new Thumbs(@pdfFile, @hpubDir, @options, @updateProgress).exec (err) ->
+      callback(err)
 
-    _buildPageName: (num) ->
-        # helper for building proper page file names
-        zeros = ""
-        if @pages > 1000
-            if num < 10 then zeros = "000"
-            if num >= 10 and num < 100 then zeros = "00"
-            if num >= 100 and num < 1000 then zeros = "0"
-        if @pages > 100
-            if num < 10 then zeros = "00"
-            if num >= 10 and num < 100 then zeros = "0"
-        if @pages > 10
-            if num < 10 then zeros = "0"
+  getCover: (callback) ->
+    @mergeOptions()
+    new Cover(@pdfFile, @hpubDir, @options).fetch (err) ->
+      callback(err)
 
-        "#{@filenamePrefix}#{zeros}#{num}#{@filenameSuffix}"
+  convertPdf: (callback) ->
+    self = @   
 
-    _initializeTranscoder: ->
-        # initialzie transcoder from pfd to html5
-        # uses default options when no option is set
-        transcoder = new pdftohtml(@pdf);
-        if _.isEmpty @importOptions then @useDefaultImportOptions()
-        transcoder.add_options(@importOptions)
-        transcoder.add_options(['--dest-dir '+ @destDir])
-        return transcoder
-        
-    generatePages: (startFrom, callback) ->
-        # used for generating pages starting from startFrom page
-        # after finish provided callback function is performed
-        next = (num) =>
-            if num < @pages then @generatePage(num + 1, next)
-            else done()
+    transcoder = new Transcoder(@pdfFile, @mergePdfOptions()).get()    
 
-        done = =>
-            callback()
+    transcoder.success ->
+      callback.call(self)
 
-        series = []
-        @getInfo()
+    transcoder.error (error) ->
+      console.log "error", error
 
-        @generatePage startFrom, next
+    transcoder.progress (ret) =>
+      self.updateProgress()
 
+    transcoder.convert()  
+    
+  convert: (callback) ->
+    @mergeOptions()
+    @unit = @unit + @pagesCount
 
-    buildBook: (thumbPage, callback) ->
-        # generates cover and pages
-        if typeof thumbPage is "function"
-            callback = thumbPage
-            thumbPage = 1
+    @generateThumbs (err) =>
+      if err then return callback err
+      @convertPdf (err) =>
+        if err then return callback err
+        new Hpuber(@hpubDir).feed (err, hpub) =>
+          @progressCB(100)
+          @hpub = hpub
+          callback null, @
 
-        @generateThumb thumbPage, =>
-            @generatePages 1, callback
+  mergeOptions: ->
+    @options = _.extend @defaults, @options
 
+  mergePdfOptions: ->
+    @pdfOptions = _.extend @pdfDefaults, @pdfOptions
 
-    _walk: (dir, removeString, done) ->
-        # recursive search in directory
-        # http://stackoverflow.com/a/5827895
-        self = @
-        results = []
-        fs.readdir dir, (err, list) ->
-          return done(err)  if err
-          pending = list.length
-          return done(null, results)  unless pending
-          list.forEach (file) ->
-            file = dir + "/" + file
-            fs.stat file, (err, stat) ->
-              if stat and stat.isDirectory()
-                self._walk file, removeString, (err, res) ->
-                  results = results.concat(res)
-                  done null, results  unless --pending
-              else
-                results.push file.replace(removeString, '')
-                done null, results  unless --pending
+  progress: (callback) ->
+    @progressCB = callback
 
-    listContent: (callback) ->
-        @_walk @destDir, "#{@destDir}/", (err, result) =>
-            error = err
-            @hpub.filelist = _.sortBy result, (name) ->
-                regex = /page([0-9]+)/
-                regexResult = regex.exec(name)
-                if regexResult then return Number(regexResult[1])
-                else return name
-            callback()
+  updateProgress: =>
+    @unit = 1.00/(@unit+1) if @unit > 1
 
-    generateBook: (callback) ->
-        self = @
-        transcoder = @_initializeTranscoder()
-        transcoder.add_options(["page"])
-        transcoder.success ->
-            callback.call(self)
+    @progressVal++
+    if @progressCB and typeof @progressCB is "function"
+      @progressCB(Math.floor @progressVal*@unit*100)
 
-        transcoder.error (error) ->
-            console.log "error", error
+  getInfo: ->
+    pinfo = new pdfinfo(@pdfFile)
+    ret = pinfo.getSync()
+    parseInt ret.pages, 10
 
-        transcoder.progress (ret) =>
-            self.updateProgress 45 + ret.current * 45/(ret.total + 1)
-
-        transcoder.convert()
-        @
-
-    buildBookWithSeparatedPages: (thumbPage, progressCB, callback) ->
-        @progress progressCB
-        # generates cover and pages
-        if typeof thumbPage is "function"
-            callback = thumbPage
-            thumbPage = 1
-
-        @updateProgress(1)
-
-        @generateThumbs (err) =>
-            if err then return callback(err)
-            @generateBook  =>
-                @updateProgress 90
-                @listContent =>
-                    @updateProgress 100
-                    callback(null)
-
-    getInfo: ->
-        # fetch basic info from PDF file
-        # the most important thing is number of pages
-        @pdfInfo = new pdfInfo(@pdf).execute().info
-        @pages = parseInt(@pdfInfo.Pages, 10)
-
-    finalize: (callback) ->
-        # builds hpub and pack it into .hpub file
-        @hpub.build (err) =>
-            @hpub.pack @destDir, (size) ->
-                callback(size)
-
-    progress: (callback) ->
-        @progressCB = callback
-
-    updateProgress: (val) ->
-        if @progressCB and typeof @progressCB is "function"
-            @progressCB(val)
-
-exports.pdftohpub = pdftohpub
+exports.pdftohpub = PdfToHpub

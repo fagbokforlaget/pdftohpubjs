@@ -12,7 +12,7 @@ class pdfToThumb
 
     constructor: (@file, @destDir, @page) ->
         @thumb = undefined
-        fs.mkdirsSync("#{@destDir}/__thumbs__")
+        fs.mkdirsSync("#{@destDir}")
         fs.mkdirsSync("#{@destDir}/tmp")
 
     execute: (callback) ->
@@ -26,6 +26,7 @@ class pdfToThumb
 
     done: (srcName, callback) ->
         fs.removeSync "#{@destDir}/tmp/#{srcName}"
+        fs.removeSync "#{@destDir}/tmp"
         callback(null)
 
     parse: (callback) ->
@@ -40,13 +41,13 @@ class pdfToThumb
 
             options =
                 srcPath: "#{@destDir}/tmp/#{srcName}"
-                dstPath: "#{@destDir}/__thumbs__/page#{@page}.png"
+                dstPath: "#{@destDir}/page#{@page}.png"
                 width: 147
                 height: 205
 
             im.resize options, (err, stdout, stderr) =>
                 if err then throw err
-                fs.copy "#{@destDir}/__thumbs__/page#{@page}.png", "#{@destDir}/book.png" if @page is 1
+                # fs.copy "#{@destDir}/__thumbs__/page#{@page}.png", "#{@destDir}/book.png" if @page is 1
                 @done srcName, callback
 
 exports.pdfToThumb = pdfToThumb
