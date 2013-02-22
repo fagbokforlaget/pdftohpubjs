@@ -14,7 +14,7 @@ class Thumbs
 
       async.forEachSeries mySeries, (page, next) =>
         @progress() if @progress
-        new pdfToThumb(@pdfFile, "#{@hpubDir}/#{@options.thumbFolder}", page).execute (err) =>
+        new pdfToThumb(@pdfFile, "#{@hpubDir}/#{@options.thumbFolder}", page, @options.thumb).execute (err) =>
           next()
       , (err) =>
         if @options.coverThumb

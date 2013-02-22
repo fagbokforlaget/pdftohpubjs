@@ -11,7 +11,7 @@ class pdfToThumb
     # page - page which is going to be used for generating thumb
     # callback - callback function
 
-    constructor: (@file, @destDir, @page) ->
+    constructor: (@file, @destDir, @page, @options={}) ->
         @thumb = undefined
         fs.mkdirsSync("#{@destDir}")
         fs.mkdirsSync("#{@destDir}/tmp")
@@ -20,10 +20,7 @@ class pdfToThumb
             width: 147
             height: 205
 
-        @options = {}
-
     execute: (callback) ->
-
         exec "pdftocairo -png -f #{@page} -l #{@page} #{@file} #{@destDir}/tmp/book", (code, output) =>
             switch code
                 when 0 then return @parse(callback)
