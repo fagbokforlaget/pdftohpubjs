@@ -1,4 +1,5 @@
 ## pdftohpubjs - PDF to hpub converter
+[![Build Status](https://travis-ci.org/fagbokforlaget/pdftohpubjs.png?branch=master)](https://travis-ci.org/fagbokforlaget/pdftohpubjs)
 
 ### Installation
 
