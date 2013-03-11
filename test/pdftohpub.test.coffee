@@ -15,6 +15,19 @@ describe 'pdftohpub', ->
         assert.equal converter.mergePdfOptions()['single-page'], '1'
         assert.equal converter.mergePdfOptions()['zoom'], '1.3333'
 
+    it "should escape on pdftohtmlEX error", (done) ->
+        converter = new pdftohpub("test/sample.pdf", 'test/book')
+
+        converter.pdfOptions =
+            'wrong': '1'
+
+        converter.options =
+            buildThumbs: true
+
+        converter.convert (err, obj) ->
+            assert.equal err, "pdf2htmlEX: unrecognized option '--wrong'\n"
+            done()
+
     it 'should merge options', ->
         converter = new pdftohpub("test/sample.pdf", 'test/book')
 

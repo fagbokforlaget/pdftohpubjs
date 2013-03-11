@@ -68,6 +68,7 @@ class PdfToHpub
 
     transcoder.error (error) ->
       console.log "error", error
+      callback.call(self, error)
 
     transcoder.progress (ret) =>
       self.updateProgress()
