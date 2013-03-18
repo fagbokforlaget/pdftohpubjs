@@ -104,9 +104,6 @@ describe 'pdftohpub', ->
             assert.equal fs.existsSync('test/book/book.png'), true
             assert.equal fs.existsSync('test/book/book.css'), true
             assert.equal fs.existsSync('test/book/page1.page'), true
-            assert.equal fs.existsSync('test/book/fonts/'), true
-            assert.equal fs.existsSync('test/book/images/'), true
-
             assert.equal _.isArray(obj.hpub.filelist), true
             assert obj.hpub.filelist.length > 0, true
             fs.removeSync 'test/book'
@@ -126,8 +123,6 @@ describe 'pdftohpub', ->
             assert.equal fs.existsSync('test/book/book.png'), true
             assert.equal fs.existsSync('test/book/book.css'), true
             assert.equal fs.existsSync('test/book/page1.page'), true
-            assert.equal fs.existsSync('test/book/fonts/'), true
-            assert.equal fs.existsSync('test/book/images/'), true
             assert.equal fs.existsSync('test/book/book.json'), true
 
             fs.removeSync 'test/book'
