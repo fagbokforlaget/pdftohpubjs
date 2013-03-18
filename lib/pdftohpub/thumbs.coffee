@@ -28,7 +28,7 @@ class Thumbs
 
   getInfo: ->
     pinfo = new pdfinfo(@pdfFile)
-    ret = pinfo.getSync()
+    ret = pinfo.getInfoSync()
     ret.pages
 
 module.exports = Thumbs

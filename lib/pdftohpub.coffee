@@ -114,7 +114,7 @@ class PdfToHpub
 
   getInfo: ->
     pinfo = new pdfinfo(@pdfFile)
-    ret = pinfo.getSync()
+    ret = pinfo.getInfoSync()
     parseInt ret.pages, 10
 
 module.exports = PdfToHpub
