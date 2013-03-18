@@ -3,7 +3,6 @@ before_install:
   - sudo add-apt-repository ppa:coolwanglu/pdf2htmlex -y
   - sudo apt-get update -y
   - sudo apt-get install pdf2htmlex -y
-n
   - sudo apt-get install -qq poppler-utils
 node_js:
   - 0.6
