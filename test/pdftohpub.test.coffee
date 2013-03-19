@@ -11,9 +11,10 @@ describe 'pdftohpub', ->
 
         converter.pdfOptions =
             'single-page': '1'
+            'zoom': '1.5'
 
         assert.equal converter.mergePdfOptions()['single-page'], '1'
-        assert.equal converter.mergePdfOptions()['zoom'], '1.3333'
+        assert.equal converter.mergePdfOptions()['zoom'], '1.5'
 
     it "should escape on pdftohtmlEX error", (done) ->
         converter = new pdftohpub("test/sample.pdf", 'test/book')

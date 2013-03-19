@@ -14,8 +14,7 @@ class PdfToHpub
     @pdfDefaults =
       'single-html': '0'
       'split-pages': '1'
-      'space-as-offset': '1'
-      'zoom': 1.3333
+      'space-as-offset': '0'
       'font-suffix': '.woff'
       'dest-dir': @hpubDir
       'css-filename': 'book.css'
