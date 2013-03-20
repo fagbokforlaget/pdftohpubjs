@@ -9,7 +9,7 @@ class Transcoder
 
   importOptions: ->
     _.map @options, (val, key) ->
-      if val and val.length
+      if key and key.length and val and val.length
         "--#{key} #{val}"
 
   get: ->
