@@ -7,10 +7,18 @@ class Transcoder
     @transcoder.add_options(@importOptions())
     @transcoder.add_options(["page"])
 
+  # It omits null or empty string values
   importOptions: ->
-    _.map @options, (val, key) ->
-      if key and key.length and val and val.length
+    _(@options).
+    chain().
+    map( (val, key) ->
+      if typeof val == 'string' and val.length
         "--#{key} #{val}"
+    ).
+    reject( (val) ->
+      return val == undefined
+    ).
+    value()
 
   get: ->
     @transcoder
