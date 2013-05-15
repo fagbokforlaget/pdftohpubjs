@@ -8,8 +8,8 @@ describe 'pdftohpub', ->
     it 'should report info about pdf', ->
         converter = new pdftohpub("test/sample.pdf", 'test/book')
 
-        converter.getInfo()
-        assert.equal converter.pages, 4
+        pages = converter.getInfo()
+        assert.equal pages, 4
 
     it 'should generate one page', (done) ->
         converter = new pdftohpub("test/sample.pdf", 'test/book')
@@ -58,9 +58,8 @@ describe 'pdftohpub', ->
         converter = new pdftohpub("test/sample.pdf", 'test/book')
 
         options = [
-            '--space-as-offset 1', 
-            '--zoom 2.33', 
-            '--font-format woff', 
+            '--space-as-offset 1',
+            '--zoom 2.33',
             '--font-suffix .woff',
             '--single-html 0'
         ]
@@ -68,23 +67,22 @@ describe 'pdftohpub', ->
 
         converter.generatePage 1, (num) ->
             assert.equal num, 1
-            assert.equal fs.existsSync('test/book/base.css'), true            
+            assert.equal fs.existsSync('test/book/base.css'), true
             fs.removeSync 'test/book'
             done()
     
     it 'should generate new book format', (done) ->
         converter = new pdftohpub("test/sample.pdf", 'test/book')
         options = [
-            '--space-as-offset 1', 
-            '--zoom 2.33', 
-            '--font-format woff', 
+            '--space-as-offset 1',
+            '--zoom 2.33',
             '--font-suffix .woff',
             '--split-pages 1',
             '--css-filename book.css'
         ]
         converter.addImportOptions(options)
         converter.buildBookWithSeparatedPages () ->
-            assert.equal converter.hpub.filelist.length, 10
+            assert.equal converter.hpub.filelist.length, 11
             fs.removeSync 'test/book'
             done()
 

@@ -1,4 +1,5 @@
 require 'shelljs/global'
+pdfinfo = require 'pdfinfojs'
 pdftohtml = require 'pdftohtmljs'
 async = require 'async'
 fs = require 'fs-extra'
@@ -7,7 +8,6 @@ HPUB = require('hpubjs')
 
 DateHelper = require('./date_helper').DateHelper
 pdfToThumb = require('./pdfthumb').pdfToThumb
-pdfInfo = require('./pdfinfo').pdfInfo
 
 
 class pdftohpub
@@ -31,9 +31,8 @@ class pdftohpub
 
     useDefaultImportOptions: ->
         # default options for pdftohtmljs
-        @addImportOptions ['--space-as-offset 1', 
-                        '--zoom 1.33', 
-                        '--font-format woff', 
+        @addImportOptions ['--space-as-offset 1',
+                        '--zoom 1.33',
                         '--font-suffix .woff'
                     ]
         @
@@ -87,10 +86,7 @@ class pdftohpub
             callback.call(self, num)
 
         transcoder.error (error) ->
-            console.log "error", error
-
-        transcoder.progress (ret) ->
-            console.log "progress", ret
+            console.error "error", error
 
         transcoder.convert()
         @
@@ -183,10 +179,7 @@ class pdftohpub
             callback.call(self)
 
         transcoder.error (error) ->
-            console.log "error", error
-
-        transcoder.progress (ret) ->
-            console.log "progress", ret
+            console.error "error", error
 
         transcoder.convert()
         @
@@ -206,8 +199,9 @@ class pdftohpub
     getInfo: ->
         # fetch basic info from PDF file
         # the most important thing is number of pages
-        @pdfInfo = new pdfInfo(@pdf).execute().info
-        @pages = parseInt(@pdfInfo.Pages, 10)
+        @pdfInfo = new pdfinfo(@pdf)
+        @pages = @pdfInfo.getInfoSync()?.pages
+        return @pages
 
     finalize: (callback) ->
         # builds hpub and pack it into .hpub file
