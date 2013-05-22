@@ -5,7 +5,6 @@ class Transcoder
   constructor: (@file, @options) ->
     @transcoder = new pdftohtml(@file)
     @transcoder.add_options(@importOptions())
-    @transcoder.add_options(["page"])
 
   # It omits null or empty string values
   importOptions: ->

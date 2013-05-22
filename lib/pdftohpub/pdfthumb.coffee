@@ -21,7 +21,7 @@ class pdfToThumb
             height: 205
 
     execute: (callback) ->
-        exec "pdftocairo -png -f #{@page} -l #{@page} #{@file} #{@destDir}/tmp/book", (code, output) =>
+        exec "pdftocairo -png -cropbox -f #{@page} -l #{@page} #{@file} #{@destDir}/tmp/book", (code, output) =>
             switch code
                 when 0 then return @parse(callback)
                 when 1 then return callback(Error "Error opening a PDF file")
