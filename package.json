@@ -1,6 +1,6 @@
 {
   "name": "pdftohpubjs",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A pdf to hpub converter",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "imagemagick": "0.1.3",
     "string": "1.1.0",
     "pdftohtmljs": "0.2.1",
-    "hpubjs": "0.0.13",
+    "hpubjs": "0.0.14",
     "pdfinfojs": "0.3.4",
     "moment": "2.0.0"
   },
