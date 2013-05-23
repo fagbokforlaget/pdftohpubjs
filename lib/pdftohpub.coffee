@@ -14,12 +14,12 @@ class PdfToHpub
     @pdfDefaults =
       'single-html': '0'
       'split-pages': '1'
-      'space-as-offset': '1'
-      'zoom': 1.3333
+      'space-as-offset': '0'
       'font-suffix': '.woff'
       'dest-dir': @hpubDir
       'css-filename': 'book.css'
       'decompose-ligature': '1'
+      'page-filename': 'page%d.page'
 
     @options = {}
 
@@ -113,7 +113,7 @@ class PdfToHpub
 
   getInfo: ->
     pinfo = new pdfinfo(@pdfFile)
-    ret = pinfo.getSync()
+    ret = pinfo.getInfoSync()
     parseInt ret.pages, 10
 
 module.exports = PdfToHpub
