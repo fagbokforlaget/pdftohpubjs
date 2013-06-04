@@ -12,7 +12,7 @@ class PdfToHpub
     @pdfOptions = {}
     
     @pdfDefaults =
-      'single-html': '0'
+      'embed': 'cfijo'
       'split-pages': '1'
       'space-as-offset': '0'
       'font-suffix': '.woff'
