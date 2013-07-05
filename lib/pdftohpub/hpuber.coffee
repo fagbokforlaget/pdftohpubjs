@@ -18,7 +18,7 @@ class Content
 class Hpuber
   constructor: (@dir, mdata={}) ->
     meta =
-      hpub: 1 
+      hpub: 1
       author: ['undefined']
       title: "undefined"
       date: moment().format("YYYY-MM-DD")

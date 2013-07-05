@@ -19,7 +19,7 @@ class PdfToHpub
       'dest-dir': @hpubDir
       'css-filename': 'book.css'
       'decompose-ligature': '1'
-      'page-filename': 'page%d.page'
+      'page-filename': 'page%d.html'
 
     @options = {}
 
