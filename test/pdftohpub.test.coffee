@@ -70,7 +70,7 @@ describe 'pdftohpub', ->
         assert.equal fs.existsSync('test/book/__thumbs__/page2.png'), true
         assert.equal fs.existsSync('test/book/__thumbs__/page3.png'), true
         fs.removeSync 'test/book'
-        done()        
+        done()
 
     it 'should copy cover page', (done) ->
       converter = new pdftohpub("test/sample.pdf", 'test/book')
@@ -107,7 +107,7 @@ describe 'pdftohpub', ->
       converter.convert (err, obj) ->
         assert.equal fs.existsSync('test/book/book.png'), true
         assert.equal fs.existsSync('test/book/book.css'), true
-        assert.equal fs.existsSync('test/book/page1.page'), true
+        assert.equal fs.existsSync('test/book/page1.html'), true
         assert.equal _.isArray(obj.hpub.filelist), true
         assert obj.hpub.filelist.length > 0, true
         fs.removeSync 'test/book'
@@ -132,7 +132,7 @@ describe 'pdftohpub', ->
       converter.convert (err, obj) ->
         assert.equal fs.existsSync('test/book/book.png'), true
         assert.equal fs.existsSync('test/book/book.css'), true
-        assert.equal fs.existsSync('test/book/page1.page'), true
+        assert.equal fs.existsSync('test/book/page1.html'), true
         assert.equal fs.existsSync('test/book/book.json'), true
 
         fs.removeSync 'test/book'
