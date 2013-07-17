@@ -100,7 +100,6 @@ describe 'pdftohpub', ->
 
       converter.options =
         buildThumbs: true
-
       converter.progress (progress) ->
         assert.equal (progress <= 100 and progress >= 0), true
 

@@ -7,6 +7,9 @@ Cover = require './cover'
 class Thumbs
   constructor: (@pdfFile, @hpubDir, @options, @progress) ->
 
+  setLogger: (@logger) ->
+    @
+
   exec: (callback) ->
     if @options.buildThumbs
       @options.pageEnd = @getInfo() unless @options.pageEnd
@@ -14,6 +17,7 @@ class Thumbs
 
       async.forEachSeries mySeries, (page, next) =>
         @progress() if @progress
+        @logger({title: "Generating thumbnails", data: "page#{page}.png"}) if @logger
         new pdfToThumb(@pdfFile, "#{@hpubDir}/#{@options.thumbFolder}", page, @options.thumb).execute (err) =>
           next()
       , (err) =>
