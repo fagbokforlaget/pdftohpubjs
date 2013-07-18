@@ -42,7 +42,7 @@ class PdfToHpub
     @metadata = {}
 
     fs.mkdirsSync(@hpubDir)
-    @pagesCount = @getInfo()
+
 
   triggerProgress: ->
     if @progress and typeof @progress is "function"
@@ -78,25 +78,29 @@ class PdfToHpub
     transcoder.convert()
 
   convert: (callback) ->
-    @mergeOptions()
-    @unit = @unit + @pagesCount
+    # @pagesCount = @getInfo()
+    @getInfo (err, pagesCount) =>
+      if err then return callback(err, @)
+      @pagesCount = pagesCount
+      @mergeOptions()
+      @unit = @unit + pagesCount
 
-    @generateThumbs (err) =>
-      if err then return callback err
-      @updateLogger({title: "Converting pdf", data: null})
-      @convertPdf (err) =>
+      @generateThumbs (err) =>
         if err then return callback err
-        @updateLogger({title: "Creating hpub structure"})
-        new Hpuber(@hpubDir, @metadata).feed (err, hpub) =>
-          @hpub = hpub.hpub
-          if @options.buildHpub
-            @updateLogger({title: "Building hpub structure"})
-            hpub.build (err) =>
+        @updateLogger({title: "Converting pdf", data: null})
+        @convertPdf (err) =>
+          if err then return callback err
+          @updateLogger({title: "Creating hpub structure"})
+          new Hpuber(@hpubDir, @metadata).feed (err, hpub) =>
+            @hpub = hpub.hpub
+            if @options.buildHpub
+              @updateLogger({title: "Building hpub structure"})
+              hpub.build (err) =>
+                @progressCB(100)
+                callback err, @
+            else
               @progressCB(100)
               callback err, @
-          else
-            @progressCB(100)
-            callback err, @
 
   addMetadata: (metadata) ->
     @metadata = _.extend @metadata, metadata
@@ -124,9 +128,12 @@ class PdfToHpub
     if @loggerCB and typeof @loggerCB is "function"
       @loggerCB logs
 
-  getInfo: ->
+  getInfo: (callback) ->
     pinfo = new pdfinfo(@pdfFile)
-    ret = pinfo.getInfoSync()
-    parseInt ret.pages, 10
+    try
+      ret = pinfo.getInfoSync()
+      callback(null, parseInt ret.pages, 10)
+    catch error
+      callback(error)
 
 module.exports = PdfToHpub
