@@ -15,7 +15,7 @@ class PdfToHpub
       'embed': 'cfijo'
       'split-pages': '1'
       'space-as-offset': '0'
-      'font-suffix': '.woff'
+      'font-format': 'woff'
       'dest-dir': @hpubDir
       'css-filename': 'book.css'
       'decompose-ligature': '1'
