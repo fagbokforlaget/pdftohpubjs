@@ -1,6 +1,6 @@
 {
   "name": "pdftohpubjs",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "description": "A pdf to hpub converter",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "dependencies": {
     "coffee-script": "1.6.2",
     "mocha": "1.8.1",
-    "async": "0.1.22",
+    "async": "0.2.9",
     "underscore": "1.4.4",
     "fs-extra": "0.6.1",
     "shelljs": "0.1.4",
