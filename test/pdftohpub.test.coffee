@@ -155,6 +155,7 @@ describe 'pdftohpub', ->
         assert.equal fs.existsSync('test/book/book.json'), true
         assert.equal obj.hpub.meta.author[0], "author"
         assert.equal obj.hpub.meta.title, "Title"
+        assert.equal obj.hpub.meta.cover, "book.png"
 
         fs.removeSync 'test/book'
         done()

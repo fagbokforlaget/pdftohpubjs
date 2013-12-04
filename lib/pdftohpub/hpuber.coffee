@@ -6,7 +6,7 @@ _ = require 'underscore'
 # this class has to be moved to hpubjs!!!
 class Content
   constructor: (@list) ->
-    
+
   exec: ->
     _.filter @list, (list) ->
       parts = list.split('.')
@@ -36,6 +36,7 @@ class Hpuber
       @hpub.filelist = list
 
       @hpub.meta.contents = _.union @hpub.meta.contents, new Content(list).exec()
+      @hpub.meta.cover = "book.png" if list.indexOf("book.png") > 0
       callback null, @
 
   finalize: (callback) ->
