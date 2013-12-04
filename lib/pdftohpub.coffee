@@ -43,7 +43,6 @@ class PdfToHpub
 
     fs.mkdirsSync(@hpubDir)
 
-
   triggerProgress: ->
     if @progress and typeof @progress is "function"
       @progress @progressState
@@ -56,7 +55,8 @@ class PdfToHpub
 
   getCover: (callback) ->
     @mergeOptions()
-    new Cover(@pdfFile, @hpubDir, @options).fetch (err) ->
+    new Cover(@pdfFile, @hpubDir, @options).fetch (err) =>
+
       callback(err)
 
   convertPdf: (callback) ->
