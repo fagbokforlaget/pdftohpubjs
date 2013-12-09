@@ -134,8 +134,10 @@ describe 'pdftohpub', ->
         assert.equal fs.existsSync('test/book/page1.html'), true
         assert.equal fs.existsSync('test/book/book.json'), true
 
-        fs.removeSync 'test/book'
-        done()
+        fs.readFile 'test/book/book.json', (err, file) ->
+          data = JSON.parse(file)
+          fs.removeSync 'test/book'
+          done()
 
     it "should be able to add metadata to hpub", (done) ->
       converter = new pdftohpub("test/sample.pdf", 'test/book')
