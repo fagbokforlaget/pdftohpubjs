@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/fagbokforlaget/pdftohpubjs.git"
   },
   "keywords": [
     "pdftohpub",
