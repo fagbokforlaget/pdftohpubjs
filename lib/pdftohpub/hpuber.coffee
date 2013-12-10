@@ -8,17 +8,14 @@ class Content
   constructor: (@list) ->
 
   exec: ->
-    _.sortBy(_.filter(@list, (list) ->
-      parts = list.split('.')
-      ext = parts[parts.length - 1]
+    filtered = _.filter @list, (list) ->
       regex = /page([0-9]+).\w+/.exec(list)
-      if ext is "html" and regex
-        return list
-      ), (page) ->
-        regex = /page([0-9]+).\w+/.exec(page)
-        if regex then return parseInt(regex[1], 10)
-        else return page
-    )
+      return list if regex
+
+    _.sortBy filtered, (page) ->
+      regex = /page([0-9]+).\w+/.exec(page)
+      if regex then return parseInt(regex[1], 10)
+      else return 0
 
 class Hpuber
   constructor: (@dir, mdata={}) ->
