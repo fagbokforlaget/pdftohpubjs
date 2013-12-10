@@ -21,8 +21,8 @@ class Hpuber
   constructor: (@dir, mdata={}) ->
     meta =
       hpub: 1
-      author: ['undefined']
-      title: "undefined"
+      author: []
+      title: undefined
       date: moment().format("YYYY-MM-DD")
       url: 'http://example.com/book.hpub'
       contents: []
