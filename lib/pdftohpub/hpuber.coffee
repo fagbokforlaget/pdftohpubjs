@@ -9,11 +9,11 @@ class Content
 
   exec: ->
     filtered = _.filter @list, (list) ->
-      regex = /page([0-9]+).\w+/.exec(list)
-      return list if regex
+      regex = /page([0-9]+).html/.exec(list)
+      return list if regex and regex[1]
 
     _.sortBy filtered, (page) ->
-      regex = /page([0-9]+).\w+/.exec(page)
+      regex = /page([0-9]+).html/.exec(page)
       if regex then return parseInt(regex[1], 10)
       else return 0
 
