@@ -16,7 +16,7 @@
     "imagemagick": "0.1.3",
     "string": "1.6.0",
     "pdftohtmljs": "0.3.5",
-    "hpubjs": "0.0.18",
+    "hpubjs": "0.1.1",
     "pdfinfojs": "0.3.4",
     "moment": "2.3.1"
   },

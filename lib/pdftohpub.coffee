@@ -110,6 +110,7 @@ class PdfToHpub
 
   mergePdfOptions: ->
     @pdfOptions = _.extend @pdfDefaults, @pdfOptions
+    @pdfOptions
 
   progress: (callback) ->
     @progressCB = callback

@@ -30,7 +30,7 @@ class pdfToThumb
                 when 99 then return callback(Error "Other error")
 
     done: (err, srcName, callback) ->
-        fs.removeSync "#{@destDir}/tmp/#{srcName}"
+        # fs.removeSync "#{@destDir}/tmp/#{srcName}"
         fs.removeSync "#{@destDir}/tmp"
         callback(err)
 
