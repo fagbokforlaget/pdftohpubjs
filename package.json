@@ -7,7 +7,7 @@
     "test": "make test"
   },
   "dependencies": {
-    "coffee-script": "1.6.3",
+    "coffee-script": "1.11.1",
     "mocha": "1.13.0",
     "async": "0.2.9",
     "underscore": "1.5.2",

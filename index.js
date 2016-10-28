@@ -1,4 +1,4 @@
-require("coffee-script");
+require("coffee-script/register");
 
 PdfToHpub = require('./lib/pdftohpub');
 
