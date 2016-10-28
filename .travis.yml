@@ -4,6 +4,8 @@ before_install:
   - sudo apt-get update -y
   - sudo apt-get install pdf2htmlex -y
   - sudo apt-get install -qq poppler-utils
+env:
+    CC=clang CXX=clang++ npm_config_clang=1
 node_js:
   - 0.10
   - 4
