@@ -5,4 +5,6 @@ before_install:
   - sudo apt-get install pdf2htmlex -y
   - sudo apt-get install -qq poppler-utils
 node_js:
-  - 0.8
+  - 0.10
+  - 4
+  - 6
