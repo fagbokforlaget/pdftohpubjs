@@ -1,6 +1,6 @@
 {
   "name": "pdftohpubjs",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "description": "A pdf to hpub converter",
   "main": "index.js",
   "scripts": {
